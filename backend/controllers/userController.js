@@ -240,9 +240,6 @@ const forgotPassword = async (req, res, next) => {
     //   })
     // }
     // return res.status(200).send(result);
-    console.log(startdate)
-    const a="2022-10-04 00:00:00";
-    console.log( a)
     const startDate = new Date(startdate);
 const endDate = new Date(enddate);
     const EventList= await Event.findAll({
