@@ -3,7 +3,8 @@ const bcrypt = require("bcrypt");
 const db = require("../Models");
 const jwt = require("jsonwebtoken");
 const sendEmail=require("../Middlewares/sendEmail")
-const crypto= require("crypto")
+const crypto= require("crypto");
+const { Op } = require('sequelize');
 
 // Assigning users to the variable User
 const User = db.users;
@@ -211,32 +212,65 @@ const forgotPassword = async (req, res, next) => {
   const eventinvitation = async(req,res)=>{
     try{
         console.log(req.body);
-    const {email} =req.body;
-    const user= await User.findAll({
-        where:{
-            email:email
-        },
-        attributes:['userName','email'],
-        include:{
-            model: Event,
-            attributes:['eventname','eventdesc']
-        }
-    })
+    const {email,page,startdate,enddate} =req.body;
+    const {eventId} = req.body;
+    // const user= await User.findOne({
+    //     where:{
+    //         email:email
+    //     },
+    //     attributes:[email],
+        //pagination
+        // offset:10*page,
+        // limit:10,
+        // include:{
+        //     model: Event,
+        //     attributes:['eventname','eventdesc'],
+        //     order: [
+        //       ['eventname', 'ASC']
+        //   ]
+        // }
+    // })
+    // console.log(user);
+    // console.log(eventId)
+    // if(eventId){
+    //   const result = await Event.findOne({
+    //     where:{
+    //       eventId:eventId
+    //     }
+    //   })
+    // }
+    // return res.status(200).send(result);
+    console.log(startdate)
+    const a="2022-10-04 00:00:00";
+    console.log( a)
+    const startDate = new Date(startdate);
+const endDate = new Date(enddate);
+    const EventList= await Event.findAll({
+      where:{
+          email:email,
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          }
+      },
+      // Sorting
+      order: [
+        ['eventname', 'ASC']
+    ],
+      // pagination
+      offset:10*page,
+      limit:10,
+      attributes:['eventdesc',"eventname"],
+  })
 
 
     console.log("================== User with events created")
-    console.log(user);
+    // console.log(user);
 
 
     const invited= await Invite.findAll({
         where:{
             email:email,
-        },
-        // attributes:['eventId'],
-        // include:{
-        //     model: Invite,
-        //     attributes:[['eventId','eventnumber']]
-        // }
+        }
     })
 
     inv = [];
@@ -246,6 +280,9 @@ const forgotPassword = async (req, res, next) => {
             where:{
                 id:invited[index].eventId,
             },
+            // pagination
+            offset:10*page,
+            limit:10,
             attributes:['eventdesc',"eventname"],
         })
     
@@ -258,44 +295,73 @@ const forgotPassword = async (req, res, next) => {
     console.log(inv);
 
     return res.status(200).json({
-         user,
-         invitations:inv
+         EventList:EventList,
+         invitations:inv,
+         page
     })
   } catch(error){
     console.log(error);
-//     console.log(req.body);
-//     const {email} =req.body;
-//     const user= await User.findAll({
-//         where:{
-//             email:email
-//         },
-//         attributes:['userName','email'],
-//         include:{
-//             model: Event,
-//             attributes:['eventname','eventdesc']
-//         }
-//     })
-//     console.log(user);
-//     const data= await User.findAll({
-//         where:{
-//             email:email,
-//         },
-//         attributes:['userName','email'],
-//         include:{
-//             model: Invite,
-//             attributes:[['eventId','eventnumber']]
-//         }
-//     })
-//     console.log(data);
-//     return res.status(200).json({
-//         events:user,
-//         invitations:data
-//    })
+
     return res.status(500).send(error);
   }
 }
   
+const eventDetails=  async(req,res)=>{
+  try{
+    console.log(req.body);
+const {eventName} =req.body;
+const event= await Event.findAll({
+  where:{
+      eventname:eventName,
+  },
+  attributes:['id','eventname','eventdesc',['email','created by']]
+})
 
+ let invitations=[];
+ for (let index = 0; index < event.length; index++) {
+  const invited= await Invite.findAll({
+      where:{
+          eventId:event[index].id,
+      },
+      // pagination
+      offset:10,
+      limit:10,
+      attributes:["email"],
+  })
+
+  console.log(invited)
+
+  invitations.push(invited);
+  return res.status(200).json({
+    Eventdetails:event,
+    invitations
+})
+}
+
+}catch(error){
+  console.log(error);
+
+    return res.status(500).send(error);
+}
+}
+
+const eventupdate= async(req,res)=>{
+  try{
+  const {oldeventname,neweventname,eventdesc} =req.body;
+  const event= await Event.findOne({
+    where:{
+        eventname:oldeventname,
+    },
+  })
+  console.log(event)
+  event.eventname=neweventname;
+  event.eventdesc=eventdesc;
+  event.save();
+  return res.status(200).send(event);
+}catch(error){
+  return res.status(500).send(error);
+}
+}
 
 module.exports = {
  signup,
@@ -303,5 +369,7 @@ module.exports = {
  logout,
  updatePassword,
  forgotPassword,
- eventinvitation
+ eventinvitation,
+ eventDetails,
+ eventupdate
 };
