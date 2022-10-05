@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
     const Event = sequelize.define( "events", {
-        EventName: {
+        eventname: {
             type: DataTypes.STRING,
             allowNull: false
         },
@@ -8,10 +8,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        uid: {
-            type: DataTypes.INTEGER,
+        email: {
+            type: DataTypes.STRING,
             allowNull: false
         },
+        userId:{
+            type: DataTypes.INTEGER,
+            allowNull: false
+        }
     }, {timestamps: true}, )
     return Event
  }

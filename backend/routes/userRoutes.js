@@ -1,6 +1,6 @@
 const express = require('express')
 const userController = require('../Controllers/userController')
-const { signup, login ,logout,updatePassword,forgotPassword} = userController;
+const { signup, login ,logout,updatePassword,forgotPassword,eventinvitation} = userController;
 const auth= require('../Middlewares/auth')
 const userAuth = require('../Middlewares/userAuth')
 
@@ -24,9 +24,10 @@ router.route("/logout").get(logout)
 
 router.route("/password/forgot").post(forgotPassword)
 
-
 router.post('/password/update', auth.isAuthenticatedUser , updatePassword);
 // router.route("/password/update").put(updatePassword)
+
+router.post('/dashboard',eventinvitation)
 
 
 module.exports = router

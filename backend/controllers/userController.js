@@ -7,6 +7,8 @@ const crypto= require("crypto")
 
 // Assigning users to the variable User
 const User = db.users;
+const Event= db.events;
+const Invite=db.invites;
 
 //signing a user up
 //hashing users password before its saved to the database with bcrypt
@@ -206,11 +208,100 @@ const forgotPassword = async (req, res, next) => {
     }
   };
 
+  const eventinvitation = async(req,res)=>{
+    try{
+        console.log(req.body);
+    const {email} =req.body;
+    const user= await User.findAll({
+        where:{
+            email:email
+        },
+        attributes:['userName','email'],
+        include:{
+            model: Event,
+            attributes:['eventname','eventdesc']
+        }
+    })
+
+
+    console.log("================== User with events created")
+    console.log(user);
+
+
+    const invited= await Invite.findAll({
+        where:{
+            email:email,
+        },
+        // attributes:['eventId'],
+        // include:{
+        //     model: Invite,
+        //     attributes:[['eventId','eventnumber']]
+        // }
+    })
+
+    inv = [];
+
+    for (let index = 0; index < invited.length; index++) {
+        const invitedEvents= await Event.findOne({
+            where:{
+                id:invited[index].eventId,
+            },
+            attributes:['eventdesc',"eventname"],
+        })
+    
+        console.log(invitedEvents)
+    
+        inv.push(invitedEvents);
+    }
+
+    console.log("================== Invited Events")
+    console.log(inv);
+
+    return res.status(200).json({
+         user,
+         invitations:inv
+    })
+  } catch(error){
+    console.log(error);
+//     console.log(req.body);
+//     const {email} =req.body;
+//     const user= await User.findAll({
+//         where:{
+//             email:email
+//         },
+//         attributes:['userName','email'],
+//         include:{
+//             model: Event,
+//             attributes:['eventname','eventdesc']
+//         }
+//     })
+//     console.log(user);
+//     const data= await User.findAll({
+//         where:{
+//             email:email,
+//         },
+//         attributes:['userName','email'],
+//         include:{
+//             model: Invite,
+//             attributes:[['eventId','eventnumber']]
+//         }
+//     })
+//     console.log(data);
+//     return res.status(200).json({
+//         events:user,
+//         invitations:data
+//    })
+    return res.status(500).send(error);
+  }
+}
+  
+
 
 module.exports = {
  signup,
  login,
  logout,
  updatePassword,
- forgotPassword
+ forgotPassword,
+ eventinvitation
 };

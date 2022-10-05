@@ -21,5 +21,15 @@ db.users = require('./userModel') (sequelize, DataTypes)
 db.events =require('./eventModel')(sequelize, DataTypes)
 db.invites =require('./inviteModel')(sequelize, DataTypes)
 
+// user and event join
+db.users.hasMany(db.events);
+db.events.belongsTo(db.users);
+
+db.events.hasMany(db.invites);
+db.invites.belongsTo(db.events);
+
+db.users.hasMany(db.invites);
+db.invites.belongsTo(db.users);
+
 //exporting the module
 module.exports = db

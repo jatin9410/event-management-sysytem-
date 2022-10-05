@@ -10,7 +10,7 @@ const sendToken = async(user,statusCode,res)=>{
         }
     });
    
-    const token = jwt.sign({_id:userr._id},process.env.JWT_SECRET,{  expiresIn : process.env.JWT_EXPIRE}
+    const token = jwt.sign({_id:userr._id}, 1 * 24 * 60 * 60,{  expiresIn : process.env.JWT_EXPIRE}
       
     )
     // options for Cookie
